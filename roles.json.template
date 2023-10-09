@@ -1,0 +1,148 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Install roles",
+    "Outputs": {
+        "AdminstrationRoleArn": {
+            "Value": {
+                "Fn::Sub": "${AdminstrationRole.Arn}"
+            }
+        },
+        "ExecutionRoleName": {
+            "Value": {
+                "Fn::Sub": "test-cfn-execution-role-1"
+            }
+        },
+        "TemplateVersion": {
+            "Description": "Template version",
+            "Value": "0.1"
+        }
+    },
+    "Resources": {
+        "AdminstrationRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "Path": "/",
+                "RoleName": {
+                    "Fn::Sub": "test-cfn-adminstration-role-1"
+                },
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "cloudformation.amazonaws.com"
+                            },
+                            "Action": "sts:AssumeRole"
+                        }
+                    ]
+                },
+                "MaxSessionDuration": 3600,
+                "Policies": [
+                    {
+                        "PolicyName": "AssumeRole",
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Sid": "AssumeRole",
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "sts:AssumeRole"
+                                    ],
+                                    "Resource": {
+                                        "Fn::Sub": "arn:*:iam::*:role/test-cfn-execution-role-1"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Sub": "test-cfn-adminstration-role-1"
+                        }
+                    }
+                ]
+            }
+        },
+        "ExecutionRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "Path": "/",
+                "RoleName": {
+                    "Fn::Sub": "test-cfn-execution-role-1"
+                },
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "AWS": {
+                                    "Fn::Sub": "${AdminstrationRole.Arn}"
+                                }
+                            },
+                            "Action": "sts:AssumeRole"
+                        }
+                    ]
+                },
+                "Policies": [
+                    {
+                        "PolicyName": "InstallPolicy",
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Sid": "InstallStacks",
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "cloudformation:CreateStack"
+                                    ],
+                                    "Resource": "*",
+                                    "Condition": $replace
+                                },
+                                {
+                                    "Sid": "UninstallStack",
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "cloudformation:DeleteStack",
+                                        "cloudformation:DescribeStackEvents",
+                                        "cloudformation:DescribeStacks"
+                                    ],
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "AllowAnythingIAM",
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "iam:*"
+                                    ],
+                                    "Resource": "*",
+                                    "Condition": {
+                                        "ForAnyValue:StringEquals": {
+                                            "aws:CalledVia": [
+                                                "cloudformation.amazonaws.com"
+                                            ]
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "MaxSessionDuration": 3600,
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Sub": "test-cfn-execution-role-1"
+                        }
+                    }
+                ]
+            }
+        }
+    }
+}

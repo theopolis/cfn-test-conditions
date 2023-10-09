@@ -1,0 +1,58 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Input stack that runs as the caller",
+    "Resources": {
+        "StackSetRolesStack": {
+            "Type": "AWS::CloudFormation::Stack",
+            "Properties": {
+                "TemplateURL": "https://cfn-test-conditions.s3.amazonaws.com/cloudformation/test/roles.json"
+            }
+        },
+        "TestSubstackStackSet": {
+            "Type": "AWS::CloudFormation::StackSet",
+            "DependsOn": [
+                "StackSetRolesStack"
+            ],
+            "Properties": {
+                "OperationPreferences": {
+                    "RegionConcurrencyType": "PARALLEL"
+                },
+                "Capabilities": [
+                    "CAPABILITY_NAMED_IAM"
+                ],
+                "TemplateURL": "https://cfn-test-conditions.s3.amazonaws.com/cloudformation/test/substack.json",
+                "Description": "Substack that runs using the execution role created",
+                "StackInstancesGroup": [
+                    {
+                        "DeploymentTargets": {
+                            "Accounts": [
+                                {
+                                    "Ref": "AWS::AccountId"
+                                }
+                            ]
+                        },
+                        "Regions": [
+                            "us-east-1"
+                        ]
+                    }
+                ],
+                "PermissionModel": "SELF_MANAGED",
+                "AdministrationRoleARN": {
+                    "Fn::GetAtt": [
+                        "StackSetRolesStack",
+                        "Outputs.AdminstrationRoleArn"
+                    ]
+                },
+                "ExecutionRoleName": {
+                    "Fn::GetAtt": [
+                        "StackSetRolesStack",
+                        "Outputs.ExecutionRoleName"
+                    ]
+                },
+                "StackSetName": {
+                    "Fn::Sub": "${AWS::StackName}-substack"
+                }
+            }
+        }
+    }
+}

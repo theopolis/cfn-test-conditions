@@ -1,0 +1,55 @@
+[
+    {
+        "StringLike": {
+            "cloudformation:TemplateUrl": "*" /* does work but re-written to https://executor-templates... */
+        }
+    },
+    {
+        "StringLike": {
+            "aws:SourceArn": "*" /* does not work */
+        }
+    },
+    {
+        "StringLike": {
+            "aws:PrincipalArn": "*" /* yes, this is the execution role, so it does not matter */
+        }
+    },
+    {
+        "Bool": {
+            "aws:PrincipalIsAWSService": "true" /* does not work */
+        }
+    },
+    {
+        "ForAnyValue:StringLike": {
+            "cloudformation:ResourceTypes": "*" /* does not work */
+        }
+    },
+    {
+        "Null": {
+            "cloudformation:ResourceTypes": "false" /* does not work */
+        }
+    },
+    {
+        "Null": {
+            "cloudformation:RoleARN": "false" /* does not work */
+        }
+    },
+    {
+        "StringLike": {
+            "aws:SourceIdentity": "*"
+        },
+        "Null": {
+            "aws:SourceIdentity": "false" /* does not work */
+        }
+    },
+    {
+        "Bool": {
+            "aws:ViaAWSService": "true" /* does not work */
+        }
+    },
+    {
+        "Null": {
+            "aws:CalledViaFirst": "false" /* does not work */
+        }
+    }
+]
